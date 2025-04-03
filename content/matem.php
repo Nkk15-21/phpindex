@@ -1,11 +1,19 @@
 <?php
-// eemalda urlist muutujad
-function clearVarsExcept($url, $varname) {
-    return strtok(basename($_SERVER['REQUEST_URI']),"?")."?$varname=".$_REQUEST[$varname];
-}
+
+
 echo "<h2>Matemaatika Tehted</h2>";
 echo "<a href='https://www.metshein.com/unit/php-matemaatilised-tehted-ulesanne-2/'>
 PHP matemaatelised tehted</a>";
+
+function clearVarsExcept($url, $varname) {
+    // basename - makes the link relative, url must contain a filename that it returns basename('http://www.ee/index.php') > index.php
+    $url = basename($url);
+    if (str_starts_with($url, "?")) {
+        return "?$varname=".$_REQUEST[$varname];
+    }
+    // strtok - returns first token after spliting on separator "?" strtoken('index.php?haha=lala', '?') > index.php
+    return strtok($url, "?")."?$varname=".$_REQUEST[$varname];
+}
 
 // Mõistatus
 echo "<h2>Загадали два числа до ....</h2>";

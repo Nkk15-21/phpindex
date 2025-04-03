@@ -16,6 +16,12 @@
         <li>
             <a href="https://nikitakonkin24.thkit.ee/">Avaleht</a>
         </li>
+        <li>
+            <a href="?leht=tekstFunktsioonid.php">Tekst Funktsioonid</a>
+        </li>
+        <li>
+            <a href="?leht=ajaFunkts.php">Aja Funktsioonid</a>
+        </li>
 
     </ul>
 </nav>
