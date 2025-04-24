@@ -4,11 +4,21 @@ require ('conf.php');
 global $yhendus;
 
 //update +1 punkt
-if(isset($_REQUEST["lisa1punkt"])){
-    $paring=$yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid+1 WHERE id=?");
-    $paring->bind_param("i", $_REQUEST["lisa1punkt"]);
-    $paring->execute();
-    header("Location:$_SERVER[PHP_SELF]");
+if (isset($_REQUEST["lisa1punkt"])) {
+    $id = $_REQUEST["lisa1punkt"];
+    $kontroll = $yhendus->prepare("SELECT punktid FROM fotokonkurs WHERE id=?");
+    $kontroll->bind_param("i", $id);
+    $kontroll->execute();
+    $kontroll->bind_result($punktid);
+    $kontroll->fetch();
+    $kontroll->close();
+
+    if ($punktid < 100) {
+        $paring = $yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid+1 WHERE id=?");
+        $paring->bind_param("i", $id);
+        $paring->execute();
+    }
+    header("Location:".$_SERVER["PHP_SELF"]);
 }
 
 //update - comment
@@ -21,11 +31,21 @@ if(isset($_REQUEST["uus_komment"]) && !empty($_REQUEST["komment"])){
 }
 
 //update -1 punkt
-if(isset($_REQUEST["minus1punkt"])){
-    $paring=$yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid-1 WHERE id=?");
-    $paring->bind_param("i", $_REQUEST["minus1punkt"]);
-    $paring->execute();
-    header("Location:$_SERVER[PHP_SELF]");
+if (isset($_REQUEST["minus1punkt"])) {
+    $id = $_REQUEST["minus1punkt"];
+    $kontroll = $yhendus->prepare("SELECT punktid FROM fotokonkurs WHERE id=?");
+    $kontroll->bind_param("i", $id);
+    $kontroll->execute();
+    $kontroll->bind_result($punktid);
+    $kontroll->fetch();
+    $kontroll->close();
+
+    if ($punktid > 0) {
+        $paring = $yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid-1 WHERE id=?");
+        $paring->bind_param("i", $id);
+        $paring->execute();
+    }
+    header("Location:".$_SERVER["PHP_SELF"]);
 }
 
 ?>
@@ -73,7 +93,7 @@ if(isset($_REQUEST["minus1punkt"])){
     while($paring->fetch()){
         echo "<tr>";
         echo "<td>".htmlspecialchars($fotoNimetus)."</td>";
-        echo "<td><img src='$pilt' alt='fotoPilt'></td>";
+        echo "<td><a href='fotoDetail.php?id=$id'><img src='$pilt' alt='fotoPilt'></a></td>";
         echo "<td>".htmlspecialchars($autor)."</td>";
         echo "<td>".htmlspecialchars($punktid)."</td>";
         echo "<td><a href='?lisa1punkt=$id'>+1</a></td>";

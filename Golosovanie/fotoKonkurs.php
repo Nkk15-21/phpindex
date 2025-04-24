@@ -20,11 +20,39 @@ if(isset($_REQUEST["peida_id"])){
 }
 
 //update +1 punkt
-if(isset($_REQUEST["lisa1punkt"])){
-    $paring=$yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid+1 WHERE id=?");
-    $paring->bind_param("i", $_REQUEST["lisa1punkt"]);
-    $paring->execute();
-    header("Location:$_SERVER[PHP_SELF]");
+if (isset($_REQUEST["lisa1punkt"])) {
+    $id = $_REQUEST["lisa1punkt"];
+    $kontroll = $yhendus->prepare("SELECT punktid FROM fotokonkurs WHERE id=?");
+    $kontroll->bind_param("i", $id);
+    $kontroll->execute();
+    $kontroll->bind_result($punktid);
+    $kontroll->fetch();
+    $kontroll->close();
+
+    if ($punktid < 100) {
+        $paring = $yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid+1 WHERE id=?");
+        $paring->bind_param("i", $id);
+        $paring->execute();
+    }
+    header("Location:".$_SERVER["PHP_SELF"]);
+}
+
+//update -1 punkt
+if (isset($_REQUEST["minus1punkt"])) {
+    $id = $_REQUEST["minus1punkt"];
+    $kontroll = $yhendus->prepare("SELECT punktid FROM fotokonkurs WHERE id=?");
+    $kontroll->bind_param("i", $id);
+    $kontroll->execute();
+    $kontroll->bind_result($punktid);
+    $kontroll->fetch();
+    $kontroll->close();
+
+    if ($punktid > 0) {
+        $paring = $yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid-1 WHERE id=?");
+        $paring->bind_param("i", $id);
+        $paring->execute();
+    }
+    header("Location:".$_SERVER["PHP_SELF"]);
 }
 
 //update - comment
@@ -32,14 +60,6 @@ if(isset($_REQUEST["uus_komment"]) && !empty($_REQUEST["komment"])){
     $paring=$yhendus->prepare("UPDATE fotokonkurs SET komentaarid=Concat(komentaarid, ?) WHERE id=?");
     $komment2=$_REQUEST["komment"]."\n";
     $paring->bind_param("si", $komment2, $_REQUEST["uus_komment"]);
-    $paring->execute();
-    header("Location:$_SERVER[PHP_SELF]");
-}
-
-//update -1 punkt
-if(isset($_REQUEST["minus1punkt"])){
-    $paring=$yhendus->prepare("UPDATE fotokonkurs SET punktid=punktid-1 WHERE id=?");
-    $paring->bind_param("i", $_REQUEST["minus1punkt"]);
     $paring->execute();
     header("Location:$_SERVER[PHP_SELF]");
 }
@@ -78,6 +98,24 @@ if(isset($_REQUEST["nimetus"]) && !empty($_REQUEST["nimetus"])){
     <title>Foto Konkurss</title>
     <link rel="stylesheet" href="style.css">
 </head>
+<script>
+    let deleteUrl = "";
+
+    function confirmDelete(url) {
+        deleteUrl = url;
+        document.getElementById("confirmModal").style.display = "block";
+        return false;
+    }
+
+    function closeModal() {
+        document.getElementById("confirmModal").style.display = "none";
+    }
+
+    document.getElementById("confirmYes").onclick = function () {
+        window.location.href = deleteUrl;
+    };
+</script>
+
 <body>
 
 <h1>Foto Konkurss</h1>
@@ -101,10 +139,13 @@ if(isset($_REQUEST["nimetus"]) && !empty($_REQUEST["nimetus"])){
         <th>Autor</th>
         <th>Punktid</th>
         <th>Lisamise Aeg</th>
-        <th>Lisa -1 Punkt</th>
+        <th>Võta maha -1 Punkt</th>
         <th>Kustuta</th>
         <th>Kommentaarid</th>
         <th>Kommentaaride kustutamine</th>
+        <th>Tegevus</th>
+        <th>Tegevus</th>
+
     </tr>
 
     <?php
@@ -122,8 +163,7 @@ if(isset($_REQUEST["nimetus"]) && !empty($_REQUEST["nimetus"])){
         echo "<td>".$punktid."</td>";
         echo "<td>".$lisamisAeg."</td>";
         echo "<td><a href='?minus1punkt=$id'>-1</a></td>";
-        echo "<td><a href='?kustuta=$id'>Kustuta</a></td>";
-
+        echo "<td><a href='#' onclick=\"return confirmDelete('?kustuta=$id');\">Kustuta</a></td>";
         echo "<td>".nl2br($komentaarid)."
             </td>";
         echo "<td><a href='?komentkust=$id'>Kommentaaride kustutamine</a></td>";
@@ -148,6 +188,16 @@ if(isset($_REQUEST["nimetus"]) && !empty($_REQUEST["nimetus"])){
 <?php
 $yhendus->close();
 ?>
+<div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <p>Kas oled kindel, et soovid selle foto kustutada?</p>
+        <div class="modal-buttons">
+            <button id="confirmYes">Jah, kustuta</button>
+            <button onclick="closeModal()">Tühista</button>
+        </div>
+    </div>
+</div>
+
 
 </body>
 </html>
